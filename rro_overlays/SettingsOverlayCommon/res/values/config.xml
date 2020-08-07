@@ -37,4 +37,7 @@
     <!-- Blur radius -->
     <integer name="max_depth_blur_radius">11</integer>
     <dimen name="max_depth_blur_radius_enhanced">15dp</dimen>
+
+    <!-- Custom pickup sensor for doze customization -->
+    <string name="pickup_sensor" translatable="false">xiaomi.sensor.pickup</string>
 </resources>
