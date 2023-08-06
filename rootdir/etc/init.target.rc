@@ -151,6 +151,8 @@ on boot
     write /dev/cpuset/background/cpus 0-7
     write /dev/cpuset/system-background/cpus 0-7
 
+    chmod 440 /proc/net/unix
+
     chown system system /sys/class/thermal/thermal_message/sconfig
 
     chown system system /sys/class/drm/card0-DSI-1/disp_param
