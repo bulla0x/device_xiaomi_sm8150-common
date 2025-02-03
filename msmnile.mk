@@ -288,6 +288,7 @@ $(call soong_config_set_bool,livedisplay_sdm,enable_dm,false)
 
 # Media configs
 PRODUCT_PACKAGES += \
+    media_codecs.xml \
     media_codecs_c2.xml \
     media_codecs_performance_c2.xml
 
