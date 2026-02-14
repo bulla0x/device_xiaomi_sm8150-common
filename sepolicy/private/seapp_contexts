@@ -1,2 +1,6 @@
 # XiaomiParts
 user=system seinfo=platform name=org.lineageos.settings domain=devicesettings_app type=system_app_data_file
+
+# Bluetooth
+user=bluetooth seinfo=default isPrivApp=true name=com.android.bluetooth domain=bluetooth type=bluetooth_data_file
+
