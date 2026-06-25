@@ -145,10 +145,6 @@ PRODUCT_PACKAGES += \
 # Call the BCR setup
 $(call inherit-product-if-exists, vendor/bcr/bcr.mk)
 
-# Configstore
-PRODUCT_PACKAGES += \
-    disable_configstore
-
 # Consumer IR
 ifeq ($(TARGET_HAS_IR),true)
 PRODUCT_PACKAGES += \
