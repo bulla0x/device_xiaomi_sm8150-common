@@ -22,6 +22,8 @@ blob_fixups: blob_fixups_user_type = {
         .add_needed('libgui_shim.so'),
     'system_ext/lib64/libwfdnative.so': blob_fixup()
         .add_needed('libinput_shim.so'),
+    'system_ext/lib64/libwfdservice.so': blob_fixup()
+        .replace_needed('android.media.audio.common.types-V4-cpp.so', 'android.media.audio.common.types-V5-cpp.so'),
     'vendor/etc/init/init.mi_thermald.rc': blob_fixup()
         .regex_replace('.*seclabel u:r:mi_thermald:s0\n', ''),
     'vendor/etc/seccomp_policy/atfwd@2.0.policy': blob_fixup()
