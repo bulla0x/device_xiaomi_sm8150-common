@@ -1,0 +1,9 @@
+service vendor.android_auto_audio /vendor/bin/android_auto_audio.sh
+    class late_start
+    user root
+    group root system
+    disabled
+    oneshot
+
+on property:sys.boot_completed=1
+    start vendor.android_auto_audio
