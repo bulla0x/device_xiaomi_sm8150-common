@@ -6,6 +6,12 @@
 
 // Init scripts
 sh_binary {
+    name: "android_auto_audio.sh",
+    src: "bin/android_auto_audio.sh",
+    vendor: true,
+}
+
+sh_binary {
     name: "init.class_main.sh",
     src: "bin/init.class_main.sh",
     vendor: true,
@@ -67,6 +73,13 @@ prebuilt_etc {
     name: "init.qcom.rc",
     src: "etc/init.qcom.rc",
     sub_dir: "init/hw",
+    vendor: true,
+}
+
+prebuilt_etc {
+    name: "init.raphael.android_auto.rc",
+    src: "etc/init.raphael.android_auto.rc",
+    sub_dir: "init",
     vendor: true,
 }
 
