@@ -172,6 +172,10 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     vendor.qti.hardware.memtrack-service
 
+# Doze
+PRODUCT_PACKAGES += \
+    XiaomiDoze
+
 # DRM
 PRODUCT_PACKAGES += \
     android.hardware.drm-service.clearkey
