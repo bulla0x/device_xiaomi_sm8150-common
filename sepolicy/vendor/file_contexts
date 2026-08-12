@@ -23,6 +23,10 @@
 # Charger
 /vendor/bin/batterysecret                                                                           u:object_r:vendor_batterysecret_exec:s0
 
+# Doze
+/sys/devices/platform/soc/soc:qcom,dsi-display-primary/doze_mode                                    u:object_r:sysfs_doze:s0
+/sys/devices/platform/soc/soc:qcom,dsi-display-primary/doze_status                                  u:object_r:sysfs_doze:s0
+
 # Fingerprint
 /vendor/bin/hw/android\.hardware\.biometrics\.fingerprint-service\.xiaomi                           u:object_r:hal_fingerprint_default_exec:s0
 
