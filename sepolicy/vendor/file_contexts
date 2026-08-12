@@ -29,6 +29,10 @@
 /(odm|vendor/odm)/bin/hw/vendor\.dolby_sp\.hardware\.dmssp@2\.0-service                             u:object_r:hal_dms_default_exec:s0
 /(vendor|odm)/bin/hw/vendor\.dolby_sp\.media\.c2@1\.0-service                                       u:object_r:mediacodec_exec:s0
 
+# Doze
+/sys/devices/platform/soc/soc:qcom,dsi-display-primary/doze_mode                                    u:object_r:sysfs_doze:s0
+/sys/devices/platform/soc/soc:qcom,dsi-display-primary/doze_status                                  u:object_r:sysfs_doze:s0
+
 # Fingerprint
 /vendor/bin/hw/android\.hardware\.biometrics\.fingerprint-service\.xiaomi                           u:object_r:hal_fingerprint_default_exec:s0
 
