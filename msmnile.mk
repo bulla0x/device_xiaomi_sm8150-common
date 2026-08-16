@@ -225,7 +225,7 @@ PRODUCT_PACKAGES += \
 endif
 
 # GameBar Performance Overlay
-$(call inherit-product, packages/apps/GameBar/gamebar.mk)
+$(call inherit-product-if-exists, packages/apps/GameBar/gamebar.mk)
 
 # Health
 PRODUCT_PACKAGES += \
