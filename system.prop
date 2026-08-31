@@ -32,6 +32,16 @@ persist.dbg.volte_avail_ovr=1
 persist.dbg.vt_avail_ovr=1
 persist.dbg.wfc_avail_ovr=1
 
+# MistOS
+ro.mist.display=1080 x 2340, 60 hz
+ro.mist.battery=4000mah
+ro.mist.soc=Snapdragon® 855
+ro.mist.camera=48MP + 8MP + 13MP
+ro.mist.front=20MP
+ro.mist.platform=SM8150
+ro.mist.screen=6.39' Amoled
+ro.mist.device.name=Redmi K20 Pro
+
 # Netflix
 ro.netflix.bsp_rev=Q855-16947-1
 
