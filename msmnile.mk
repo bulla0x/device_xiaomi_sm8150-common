@@ -145,6 +145,11 @@ PRODUCT_PACKAGES += \
 # Call the BCR setup
 $(call inherit-product-if-exists, vendor/bcr/bcr.mk)
 
+# Cgroup and task_profiles
+PRODUCT_COPY_FILES += \
+    system/core/libprocessgroup/profiles/cgroups.json:$(TARGET_COPY_OUT_VENDOR)/etc/cgroups.json \
+    system/core/libprocessgroup/profiles/task_profiles.json:$(TARGET_COPY_OUT_VENDOR)/etc/task_profiles.json
+
 # Consumer IR
 ifeq ($(TARGET_HAS_IR),true)
 PRODUCT_PACKAGES += \
