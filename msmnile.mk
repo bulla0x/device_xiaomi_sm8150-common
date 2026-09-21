@@ -327,6 +327,10 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PACKAGES += \
     libqti_vndfwk_detect.vendor
 
+# Remove bloats
+PRODUCT_PACKAGES += \
+    RemovePackages
+
 # RIL
 ifneq ($(TARGET_IS_TABLET),true)
 PRODUCT_COPY_FILES += \
