@@ -203,11 +203,11 @@ $(call soong_config_set,surfaceflinger,udfps_lib,//hardware/xiaomi:libudfps_exte
 endif
 endif
 
-# FM
-ifeq ($(TARGET_HAS_FM),true)
-PRODUCT_PACKAGES += \
+##FM##
+#ifeq ($(TARGET_HAS_FM),true)
+#PRODUCT_PACKAGES += \
     FM2
-endif
+#endif
 
 # GameBar Performance Overlay
 $(call inherit-product-if-exists, packages/apps/GameBar/gamebar.mk)
