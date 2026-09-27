@@ -14,3 +14,7 @@ allow hal_sensors_default sysfs_iio:file rw_file_perms;
 
 # Access to ADSP properties
 get_prop(hal_sensors_default, vendor_adsprpc_prop)
+
+# sensors.udfps polls /sys/touchpanel/fp_state for screen-off fingerprint
+allow hal_sensors_default sysfs_touchpanel:dir search;
+allow hal_sensors_default sysfs_touchpanel:file r_file_perms;

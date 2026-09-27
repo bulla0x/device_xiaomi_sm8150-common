@@ -276,6 +276,12 @@ PRODUCT_SET_DEBUGFS_RESTRICTIONS := true
 PRODUCT_PACKAGES += \
     android.hardware.light-service.lineage
 
+# LiveDisplay, sdm backend: exposes the panel's QDCM colour modes and picture
+# adjustment through libsdm-disp-vndapis (the sm8150 display blob set). The
+# HAL's sepolicy comes from device/lineage/sepolicy/qcom via SEPolicy.mk.
+PRODUCT_PACKAGES += \
+    vendor.lineage.livedisplay-service.sdm
+
 # Media configs
 PRODUCT_PACKAGES += \
     media_codecs_c2.xml \
