@@ -236,6 +236,37 @@
     </Decoders>
 
     <Encoders>
+        <!-- MediaCodecList enumerates in XML order and createEncoderByType()
+             takes the first match, which beats the Codec2 rank. Our encoders
+             are listed ahead of the QTI ones on purpose: the QTI AVC encoder
+             only works for camera (NV12) input and fails on composited RGBA
+             surfaces (screen recording, any app encoding a Surface), and the
+             QTI HEVC encoder fails before its first frame. Ours handle both
+             paths. The QTI entries stay so they remain reachable by name.
+             No OMX.qcom.video.encoder.* aliases here: two components claiming
+             one alias makes MediaCodecList drop one nondeterministically. -->
+        <MediaCodec name="c2.sm8150.avc.encoder" type="video/avc">
+            <Limit name="size" min="96x96" max="4096x4096" />
+            <Limit name="alignment" value="2x2" />
+            <Limit name="block-size" value="16x16" />
+            <Limit name="block-count" range="36-36864" />
+            <Limit name="blocks-per-second" min="24" max="2073600" />
+            <Limit name="bitrate" range="4096-160000000" />
+            <Limit name="frame-rate" range="1-480" />
+            <Limit name="concurrent-instances" max="16" />
+            <Feature name="bitrate-modes" value="VBR,CBR" />
+        </MediaCodec>
+        <MediaCodec name="c2.sm8150.hevc.encoder" type="video/hevc">
+            <Limit name="size" min="96x96" max="4096x4096" />
+            <Limit name="alignment" value="2x2" />
+            <Limit name="block-size" value="16x16" />
+            <Limit name="block-count" range="36-36864" />
+            <Limit name="blocks-per-second" min="24" max="2073600" />
+            <Limit name="bitrate" range="4096-160000000" />
+            <Limit name="frame-rate" range="1-480" />
+            <Limit name="concurrent-instances" max="16" />
+            <Feature name="bitrate-modes" value="VBR,CBR" />
+        </MediaCodec>
         <MediaCodec name="c2.qti.avc.encoder" type="video/avc">
             <Alias name="OMX.qcom.video.encoder.avc" />
             <Limit name="size" min="96x96" max="4096x4096" />
