@@ -236,15 +236,17 @@
     </Decoders>
 
     <Encoders>
-        <!-- MediaCodecList enumerates in XML order and createEncoderByType()
-             takes the first match, which beats the Codec2 rank. Our encoders
-             are listed ahead of the QTI ones on purpose: the QTI AVC encoder
-             only works for camera (NV12) input and fails on composited RGBA
-             surfaces (screen recording, any app encoding a Surface), and the
-             QTI HEVC encoder fails before its first frame. Ours handle both
-             paths. The QTI entries stay so they remain reachable by name.
-             No OMX.qcom.video.encoder.* aliases here: two components claiming
-             one alias makes MediaCodecList drop one nondeterministically. -->
+        <!-- In-tree Codec2 encoders (hardware/qcom-caf/sm8150/media/c2-venc).
+             Selection is by Codec2 rank, not XML order: MediaCodecList sorts by
+             rank and XML order only breaks ties. These advertise rank 128
+             against the QTI encoders' 256, so they are the default for
+             video/avc and video/hevc. The QTI AVC encoder only works for
+             camera (NV12) input and fails on composited RGBA surfaces (screen
+             recording, any app encoding a Surface); the QTI HEVC encoder fails
+             before its first frame. The QTI entries stay listed so they remain
+             reachable by name. No OMX.qcom.video.encoder.* aliases here: two
+             components claiming one alias makes MediaCodecList drop one
+             nondeterministically. -->
         <MediaCodec name="c2.sm8150.avc.encoder" type="video/avc">
             <Limit name="size" min="96x96" max="4096x4096" />
             <Limit name="alignment" value="2x2" />
