@@ -281,6 +281,14 @@ PRODUCT_PACKAGES += \
     media_codecs_c2.xml \
     media_codecs_performance_c2.xml
 
+# Codec2 AVC/HEVC encoders built on the QTI V4L2 engine
+# (hardware/qcom-caf/sm8150/media/c2-venc). The prebuilt QTI Codec2 encoders
+# fail off the camera path: AVC cannot take composited RGBA surfaces (screen
+# recording) and HEVC fails before its first frame. media_codecs_c2.xml lists
+# these ahead of the QTI entries.
+PRODUCT_PACKAGES += \
+    sm8150-c2-venc-service
+
 # NFC
 PRODUCT_PACKAGES += \
     android.hardware.nfc-service.nxp \

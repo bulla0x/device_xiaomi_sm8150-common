@@ -90,3 +90,8 @@
 # Label read_ahead_kb and nr_requests in /data partition
 /sys/devices/platform/soc/1d84000.ufshc/host0/target0:0:0/0:0:0:0/block/sda/queue/read_ahead_kb u:object_r:vendor_sysfs_scsi_host:s0
 /sys/devices/platform/soc/1d84000.ufshc/host0/target0:0:0/0:0:0:0/block/sda/queue/nr_requests u:object_r:vendor_sysfs_scsi_host:s0
+
+# Codec2 AVC/HEVC encoder service (media/c2-venc). Same label the QTI Codec2
+# service uses, so it lands in the mediacodec domain that already has the
+# V4L2, ION and buffer-pool permissions the shared engine needs.
+/vendor/bin/hw/sm8150-c2-venc-service          u:object_r:mediacodec_exec:s0
