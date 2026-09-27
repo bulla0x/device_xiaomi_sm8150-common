@@ -47,7 +47,10 @@
          * The remote submix module "audio.r_submix.default" must be installed on the device.
          * The device must be provisioned with HDCP keys (for protected content).
     -->
-    <bool name="config_enableWifiDisplay">true</bool>
+    <!-- Off: the Qualcomm/Xiaomi WFD stack (wfdservice, libwfdservice) links
+         platform-private libaudioclient and audio AIDL types V4, which do not
+         exist on Android 17. The blobs are not shipped on this branch. -->
+    <bool name="config_enableWifiDisplay">false</bool>
 
     <!-- Set to true if the wifi display supports compositing content stored
          in gralloc protected buffers.  For this to be true, there must exist
@@ -59,7 +62,7 @@
          This flag controls whether the {@link Display#FLAG_SUPPORTS_PROTECTED_BUFFERS}
          flag is set for wifi displays.
     -->
-    <bool name="config_wifiDisplaySupportsProtectedBuffers">true</bool>
+    <bool name="config_wifiDisplaySupportsProtectedBuffers">false</bool>
 
     <!-- Indicate whether closing the lid causes the device to go to sleep and opening
          it causes the device to wake up.
