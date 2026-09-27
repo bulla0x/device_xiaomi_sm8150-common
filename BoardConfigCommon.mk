@@ -101,7 +101,7 @@ TARGET_KERNEL_CONFIG := \
 
 # The "Linux version" banner (/proc/version) embeds the build machine's
 # user@host unless told otherwise. Use the project name instead.
-TARGET_KERNEL_ADDITIONAL_FLAGS := KBUILD_BUILD_USER=raphghost KBUILD_BUILD_HOST=raphghost
+TARGET_KERNEL_ADDITIONAL_FLAGS := KBUILD_BUILD_USER=RaphGhost KBUILD_BUILD_HOST=RaphGhost
 
 # Media
 TARGET_USES_ION := true
