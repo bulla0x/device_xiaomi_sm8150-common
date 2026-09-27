@@ -9,73 +9,43 @@
 #include "UdfpsHandler.h"
 
 #include <android-base/logging.h>
-#include <dirent.h>
 #include <fcntl.h>
-#include <limits.h>
-#include <linux/input.h>
-#include <mutex>
 #include <poll.h>
-#include <stdlib.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/ioctl.h>
 #include <thread>
 #include <unistd.h>
-
-/*
- * Emitted by the goodix touch driver on a FOD-area press/release. Defined only
- * in the driver's own header (goodix_ts_core.h), so repeat it here.
- */
-#define BTN_INFO 0x152
 
 #define COMMAND_NIT 10
 #define PARAM_NIT_FOD 1
 #define PARAM_NIT_NONE 0
 
+/*
+ * Illumination is the kernel's job. When the UDFPS overlay is pressed,
+ * SurfaceFlinger tags its layer with FOD_PRESSED_LAYER_ZORDER, the display HAL
+ * carries the bit onto the DRM plane (FOD_ZPOS), and sde_crtc builds the FOD
+ * dim layer from PLANE_PROP_FOD: the panel goes to HBM with a compensating dim
+ * layer under the circle, frame-synchronised under panel_lock, and
+ * sde_connector_update_fod_hbm() raises fod_ui. All this handler has to do is
+ * tell the sensor when the light is actually there.
+ *
+ * Driving fod_hbm and the backlight from here was needed while the sm8350
+ * display HAL dropped the FOD bit (changes.md sections 22, 31, 34). With the
+ * sm8150 display HAL live (section 38) the in-kernel path works again; see
+ * section 51 for the measurements.
+ */
 static const char* kFodUiPaths[] = {
         "/sys/devices/platform/soc/soc:qcom,dsi-display-primary/fod_ui",
         "/sys/devices/platform/soc/soc:qcom,dsi-display/fod_ui",
 };
 
+/*
+ * Arms the goodix touch IC to report FOD-area presses (BTN_INFO), which is
+ * what makes the HAL's finger-down detection fire at all. init.xiaomi.rc arms
+ * it at boot; it is re-asserted here and never written back to 0.
+ */
 static const char* kFodStatusPaths[] = {
         "/sys/touchpanel/fod_status",
         "/sys/devices/virtual/touch/tp_dev/fod_status",
 };
-
-/*
- * Panel-side HBM-FOD trigger. Normally driven in-kernel by
- * sde_connector_update_fod_hbm() once PLANE_PROP_FOD lands on a plane, but on
- * this build fod_ui never leaves 0, so the optical sensor gets no illumination
- * and the HAL's onBeforeEnrollCapture times out (error 1143 -> ERROR_TIMEOUT).
- * Drive it directly from the pointer callbacks instead.
- */
-static const char* kFodHbmPaths[] = {
-        "/sys/devices/platform/soc/soc:qcom,dsi-display-primary/fod_hbm",
-        "/sys/devices/platform/soc/soc:qcom,dsi-display/fod_hbm",
-};
-
-/*
- * Panel backlight. The sensor is optical: its only light source is the pixels
- * above it, so exposure is whatever the backlight happens to be. Under
- * auto-brightness that differs on every attempt, which is what made unlock
- * erratic -- the lockscreen is the worst case, since the panel is at its
- * dimmest right when the sensor needs light.
- *
- * The panel ships a FOD dim LUT (qcom,disp-fod-dim-lut, backlight -> alpha)
- * for exactly this: the intended flow drives the panel to full HBM and
- * composites a dim layer *under* the FOD circle, so the circle always emits
- * maximum light while the rest of the screen still looks like the user's
- * setting. That layer is built in-kernel from PLANE_PROP_FOD, which never
- * reaches the driver on this build, so emulate the part that matters: pin the
- * backlight to max for the duration of the press, restore it after.
- *
- * Measured: image_quality 16-21 at backlight 110, 42-55 at 332-800, clean
- * enrolment at 2047. Do not add light by other means -- a white icon at max
- * backlight over-exposes and every capture is rejected with
- * GF_ERROR_ACQUIRED_PARTIAL. The stock cyan icon is part of this calibration.
- */
-static const char* kBrightnessPath = "/sys/class/backlight/panel0-backlight/brightness";
-static const char* kMaxBrightnessPath = "/sys/class/backlight/panel0-backlight/max_brightness";
 
 static bool readBool(int fd) {
     char c;
@@ -96,33 +66,6 @@ static bool readBool(int fd) {
     return c != '0';
 }
 
-static int readIntFile(const char* path) {
-    int fd = open(path, O_RDONLY);
-    if (fd < 0) {
-        return -1;
-    }
-
-    char buf[32] = {0};
-    ssize_t n = read(fd, buf, sizeof(buf) - 1);
-    close(fd);
-    return n > 0 ? atoi(buf) : -1;
-}
-
-static void writeIntFile(const char* path, int value) {
-    int fd = open(path, O_WRONLY);
-    if (fd < 0) {
-        LOG(ERROR) << "failed to open " << path;
-        return;
-    }
-
-    char buf[32];
-    int len = snprintf(buf, sizeof(buf), "%d", value);
-    if (write(fd, buf, len) < 0) {
-        LOG(ERROR) << "failed to write " << value << " to " << path;
-    }
-    close(fd);
-}
-
 static void writeBool(int fd, bool value) {
     if (fd < 0) {
         return;
@@ -132,53 +75,6 @@ static void writeBool(int fd, bool value) {
     if (write(fd, value ? "1" : "0", 1) < 0) {
         LOG(ERROR) << "failed to write " << value << " to fd " << fd;
     }
-}
-
-/*
- * The goodix touch device, by name. BTN_INFO comes from this node and is the
- * only finger-up signal that is always delivered: the framework drops
- * onPointerUp once the auth client is torn down ("onPointerUp received during
- * client: null"), and the HAL stops emitting onAcquired(7, 23) at the same
- * point, so HBM would otherwise stay lit indefinitely after a match.
- */
-static int openTouchDevice() {
-    DIR* dir = opendir("/dev/input");
-    if (!dir) {
-        LOG(ERROR) << "failed to open /dev/input";
-        return -1;
-    }
-
-    int fd = -1;
-    struct dirent* ent;
-    while ((ent = readdir(dir)) != nullptr) {
-        if (strncmp(ent->d_name, "event", 5) != 0) {
-            continue;
-        }
-
-        char path[PATH_MAX];
-        snprintf(path, sizeof(path), "/dev/input/%s", ent->d_name);
-
-        int tmp = open(path, O_RDONLY);
-        if (tmp < 0) {
-            continue;
-        }
-
-        char name[128] = {0};
-        if (ioctl(tmp, EVIOCGNAME(sizeof(name) - 1), name) >= 0 &&
-            strstr(name, "goodix_ts") != nullptr) {
-            LOG(INFO) << "watching " << path << " (" << name << ") for BTN_INFO";
-            fd = tmp;
-            break;
-        }
-
-        close(tmp);
-    }
-
-    closedir(dir);
-    if (fd < 0) {
-        LOG(ERROR) << "goodix touch device not found";
-    }
-    return fd;
 }
 
 class XiaomiMsmnileUdfpsHandler : public UdfpsHandler {
@@ -192,25 +88,7 @@ class XiaomiMsmnileUdfpsHandler : public UdfpsHandler {
                 break;
             }
         }
-
-        for (auto& path : kFodHbmPaths) {
-            mFodHbmFd = open(path, O_WRONLY);
-            if (mFodHbmFd >= 0) {
-                break;
-            }
-        }
-
-        /*
-         * Arm the touch IC so it reports BTN_INFO on FOD-area presses.
-         * init.xiaomi.rc already does this at boot, but the fod_ui poll below
-         * used to write it straight back to 0: sysfs signals POLLPRI on the
-         * very first poll(), the thread read fod_ui == 0 and disarmed it. That
-         * cancelled the init.rc workaround on every boot.
-         */
         writeBool(mFodStatusFd, true);
-
-        mMaxBrightness = readIntFile(kMaxBrightnessPath);
-        LOG(INFO) << "max brightness = " << mMaxBrightness;
 
         std::thread([this]() {
             int fodUiFd = -1;
@@ -242,59 +120,25 @@ class XiaomiMsmnileUdfpsHandler : public UdfpsHandler {
                 bool fodUi = readBool(fodUiFd);
                 LOG(INFO) << "fod_ui changed to " << fodUi;
 
-                /*
-                 * Only ever act on the asserted edge. A de-assert here must not
-                 * disarm fod_status, and must not cancel illumination that the
-                 * pointer callbacks are driving.
-                 */
+                // The panel is lit (or not); let the sensor know.
+                if (mDevice && mDevice->extCmd) {
+                    mDevice->extCmd(mDevice, COMMAND_NIT,
+                                    fodUi ? PARAM_NIT_FOD : PARAM_NIT_NONE);
+                }
+                // Keep the touch IC armed across sessions.
                 if (fodUi) {
-                    setFodState(true);
+                    writeBool(mFodStatusFd, true);
                 }
             }
-        }).detach();
-
-        /*
-         * Authoritative finger up/down. Driven by the kernel, so it survives
-         * the auth client going away mid-press.
-         */
-        std::thread([this]() {
-            int touchFd = openTouchDevice();
-            if (touchFd < 0) {
-                return;
-            }
-
-            struct input_event ev;
-            while (read(touchFd, &ev, sizeof(ev)) == sizeof(ev)) {
-                /*
-                 * Release only. BTN_INFO fires on every FOD-area touch,
-                 * including while the panel is suspended, and writing fod_hbm
-                 * then pushes a DSI command sequence at a powered-down panel:
-                 * the link wedges, the ESD check trips and the driver reports
-                 * PANEL_DEAD, leaving a black screen until reboot.
-                 *
-                 * Turning HBM *on* therefore stays gated on onFingerDown,
-                 * which only arrives while a FOD session is actually up.
-                 * Turning it *off* here is safe -- setFodState() is a no-op
-                 * unless we previously turned it on for a live session.
-                 */
-                if (ev.type == EV_KEY && ev.code == BTN_INFO && ev.value == 0) {
-                    setFodState(false);
-                }
-            }
-
-            LOG(ERROR) << "BTN_INFO read loop ended";
-            close(touchFd);
         }).detach();
     }
 
     void onFingerDown(uint32_t /*x*/, uint32_t /*y*/, float /*minor*/, float /*major*/) {
         LOG(INFO) << "onFingerDown";
-        setFodState(true);
     }
 
     void onFingerUp() {
         LOG(INFO) << "onFingerUp";
-        setFodState(false);
     }
 
     void onAcquired(int32_t /*result*/, int32_t /*vendorCode*/) {
@@ -303,50 +147,14 @@ class XiaomiMsmnileUdfpsHandler : public UdfpsHandler {
 
     void cancel() {
         LOG(INFO) << "cancel";
-        setFodState(false);
+        if (mDevice && mDevice->extCmd) {
+            mDevice->extCmd(mDevice, COMMAND_NIT, PARAM_NIT_NONE);
+        }
     }
 
   private:
-    void setFodState(bool enabled) {
-        std::lock_guard<std::mutex> lock(mFodLock);
-
-        if (mFodActive == enabled) {
-            return;
-        }
-        mFodActive = enabled;
-
-        LOG(INFO) << "setFodState(" << enabled << ")";
-
-        if (enabled) {
-            mSavedBrightness = readIntFile(kBrightnessPath);
-            if (mMaxBrightness > 0) {
-                writeIntFile(kBrightnessPath, mMaxBrightness);
-            }
-        }
-
-        // Illuminate before telling the HAL, so the sensor has light to capture with.
-        writeBool(mFodHbmFd, enabled);
-
-        if (mDevice && mDevice->extCmd) {
-            mDevice->extCmd(mDevice, COMMAND_NIT, enabled ? PARAM_NIT_FOD : PARAM_NIT_NONE);
-        }
-
-        // Keep the touch IC armed; never disarm it.
-        if (enabled) {
-            writeBool(mFodStatusFd, true);
-        } else if (mSavedBrightness >= 0) {
-            writeIntFile(kBrightnessPath, mSavedBrightness);
-            mSavedBrightness = -1;
-        }
-    }
-
     fingerprint_device_t *mDevice = nullptr;
     int mFodStatusFd = -1;
-    int mFodHbmFd = -1;
-    bool mFodActive = false;
-    int mSavedBrightness = -1;
-    int mMaxBrightness = -1;
-    std::mutex mFodLock;
 };
 
 static UdfpsHandler* create() {
