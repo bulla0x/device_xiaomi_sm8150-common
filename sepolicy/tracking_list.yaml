@@ -1,0 +1,15 @@
+# SELinux Treble labeling tracking list (system/sepolicy/tests/treble_labeling_tests.md).
+#
+# XiaomiParts (org.lineageos.settings) is a platform app on system_ext that
+# writes device sysfs nodes directly (sysfs_leds, sysfs_thermal). Android 17
+# requires platform apps to run in a coredomain, and a coredomain may not touch
+# generic sysfs (neverallow in system/sepolicy/private/coredomain.te), so the
+# app cannot simply be made coredomain without moving those accesses behind a
+# vendor HAL. Track it here until that is done.
+coredomain_in_vendor: []
+platform_file_in_vendor_file_contexts: []
+platform_apps_in_vendor_seapp_contexts: []
+non_coredomain_for_platform_apps:
+  - apk: XiaomiParts.apk
+    bug: 0
+coredomain_for_vendor_apps: []
