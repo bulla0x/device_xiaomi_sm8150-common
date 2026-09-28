@@ -459,4 +459,4 @@ PRODUCT_COPY_FILES += \
 $(call inherit-product, vendor/xiaomi/sm8150-common/sm8150-common-vendor.mk)
 
 # SELinux Treble labeling: known violations tracked, see sepolicy/tracking_list.yaml
-PRODUCT_SELINUX_TREBLE_LABELING_TRACKING_LIST_FILE := $(COMMON_PATH)/sepolicy/tracking_list.yaml
+PRODUCT_SELINUX_TREBLE_LABELING_TRACKING_LIST_FILE := $(LOCAL_PATH)/sepolicy/tracking_list.yaml
