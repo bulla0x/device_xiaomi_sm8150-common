@@ -264,6 +264,14 @@ PRODUCT_PACKAGES += \
     ipacm \
     IPACM_cfg.xml
 
+# ION
+# Android 17's libion is a new implementation without legacy ION support.
+# libQSEEComAPI (and with it keymaster, gatekeeper, fingerprint, DRM) still
+# allocates through legacy ION; with the new libion QSEECom_start_app() fails
+# and the keymaster HAL aborts in a loop, so /data never gets its key and the
+# device sits at the boot logo. Select the legacy implementation.
+$(call soong_config_set_bool,libion,legacy_impl,true)
+
 # Kernel
 PRODUCT_ENABLE_UFFD_GC := true
 PRODUCT_SET_DEBUGFS_RESTRICTIONS := true
