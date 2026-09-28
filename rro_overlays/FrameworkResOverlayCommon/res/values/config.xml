@@ -47,10 +47,12 @@
          * The remote submix module "audio.r_submix.default" must be installed on the device.
          * The device must be provisioned with HDCP keys (for protected content).
     -->
-    <!-- Off: the Qualcomm/Xiaomi WFD stack (wfdservice, libwfdservice) links
+    <!-- The Qualcomm/Xiaomi WFD stack (wfdservice, libwfdservice) links
          platform-private libaudioclient and audio AIDL types V4, which do not
-         exist on Android 17. The blobs are not shipped on this branch. -->
-    <bool name="config_enableWifiDisplay">false</bool>
+         exist on Android 17, so its blobs are not shipped on this branch.
+         Without com.qualcomm.wfd.ExtendedRemoteDisplay the framework falls
+         back to the AOSP RemoteDisplay source (libstagefright_wfd). -->
+    <bool name="config_enableWifiDisplay">true</bool>
 
     <!-- Set to true if the wifi display supports compositing content stored
          in gralloc protected buffers.  For this to be true, there must exist
