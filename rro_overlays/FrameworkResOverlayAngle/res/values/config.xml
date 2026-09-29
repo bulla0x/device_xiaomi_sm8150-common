@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     SPDX-FileCopyrightText: The LineageOS Project
+     SPDX-License-Identifier: Apache-2.0
+-->
+<resources>
+    <!-- Don't force any app onto ANGLE. The GMS overlay's list was tuned for
+         Pixel GPUs; on the Adreno 640 driver (Vulkan 1.1) games on it such as
+         Free Fire MAX pick a GLES2 renderer they ship no shaders for and
+         draw everything with Unity's magenta error shader. Users can still
+         pick ANGLE per app in developer options. -->
+    <string-array name="config_angleAllowList" />
+</resources>

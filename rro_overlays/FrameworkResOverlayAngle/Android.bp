@@ -1,0 +1,11 @@
+//
+// SPDX-FileCopyrightText: The LineageOS Project
+// SPDX-License-Identifier: Apache-2.0
+//
+
+// Lives on system_ext so it is applied after static overlays on product,
+// such as the GMS framework overlay that sets config_angleAllowList.
+runtime_resource_overlay {
+    name: "FrameworkResOverlayAngle",
+    system_ext_specific: true,
+}

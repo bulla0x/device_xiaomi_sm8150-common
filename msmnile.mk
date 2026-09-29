@@ -316,6 +316,7 @@ PRODUCT_COPY_FILES += \
 # Overlays
 PRODUCT_PACKAGES += \
     CarrierConfigOverlayCommon \
+    FrameworkResOverlayAngle \
     FrameworkResOverlayCommon \
     LineageDialerOverlayCommon \
     LineageSDKOverlayCommon \
