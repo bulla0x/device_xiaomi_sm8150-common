@@ -1,3 +1,13 @@
+# APEX
+# Don't store updated APEXes as pinned images in /data/apex/images. apexd
+# activates those through dm-linear devices over userdata and reports the
+# /dev/block/dm-N node as the module path; system_server can't stat it
+# (dm_device), PackageManager fails to parse it and boot loops. Seen with a
+# Play ExtServices update. Keep updates as plain files in /data/apex/active
+# instead. Pinned images already on a device are then ignored and the
+# pre-installed APEX is used.
+apexd.config.use_fiemap=false
+
 # Audio
 aaudio.hw_burst_min_usec=2000
 aaudio.mmap_exclusive_policy=2
