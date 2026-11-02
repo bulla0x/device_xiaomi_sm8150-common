@@ -180,6 +180,9 @@ PRODUCT_PRODUCT_PROPERTIES += \
 PRODUCT_PACKAGES += \
     XiaomiParts
 
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/parts/permissions/privapp_whitelist_co.infinity.xparts.xml:$(TARGET_COPY_OUT_SYSTEM_EXT)/etc/permissions/privapp_whitelist_co.infinity.xparts.xml
+
 # Display
 #
 # Uses the sm8150 display HAL, which matches this SoC and this kernel: its FOD

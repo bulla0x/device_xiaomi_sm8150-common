@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.lineageos.settings.popupcamera;
+package co.infinity.xparts.popupcamera;
 
 import android.annotation.NonNull;
 import android.app.AlertDialog;
@@ -39,9 +39,9 @@ import android.util.Log;
 import android.view.WindowManager;
 import android.widget.Toast;
 
-import org.lineageos.settings.R;
-import org.lineageos.settings.sensors.SensorsUtils;
-import org.lineageos.settings.utils.FileUtils;
+import co.infinity.xparts.R;
+import co.infinity.xparts.sensors.SensorsUtils;
+import co.infinity.xparts.utils.FileUtils;
 
 import vendor.xiaomi.hardware.motor.V1_0.IMotor;
 import vendor.xiaomi.hardware.motor.V1_0.IMotorCallback;

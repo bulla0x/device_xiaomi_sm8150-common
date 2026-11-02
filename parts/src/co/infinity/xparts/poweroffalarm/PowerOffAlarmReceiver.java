@@ -8,7 +8,7 @@
  * off alarm feature", LineageOS android_packages_apps_DeskClock f086ad892159).
  */
 
-package org.lineageos.settings.poweroffalarm;
+package co.infinity.xparts.poweroffalarm;
 
 import android.app.AlarmManager;
 import android.content.BroadcastReceiver;
