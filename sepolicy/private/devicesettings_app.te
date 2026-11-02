@@ -25,8 +25,15 @@ allow devicesettings_app sysfs_leds:dir search;
 # Allow XiaomiParts to read/write to sysfs_leds
 allow devicesettings_app sysfs_leds:file rw_file_perms;
 
-# Allow XiaomiParts to write to sysfs_thermal
-allow devicesettings_app sysfs_thermal:file w_file_perms;
+# Allow XiaomiParts to read and write sysfs_thermal (thermal_message/sconfig)
+allow devicesettings_app sysfs_thermal:dir r_dir_perms;
+allow devicesettings_app sysfs_thermal:file rw_file_perms;
+
+# Allow XiaomiParts to track the foreground app for thermal profiles
+allow devicesettings_app {
+  activity_task_service
+  thermal_service
+}:service_manager find;
 
 # Allow XiaomiParts to communicate with the Xiaomi motor HAL
 hal_client_domain(devicesettings_app, hal_motor)
